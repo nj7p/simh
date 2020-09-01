@@ -82,12 +82,14 @@ DEVICE *sim_devices[] = {
 
 const char *sim_stop_messages[] = {
     "Unknown error",
-    "Unknown I/O Instruction",
+    "Reserved Instruction",
     "HALT instruction",
     "Breakpoint",
     "Invalid Opcode",
+    "Unknown I/O Instruction",
     "Invalid Memory",
-    "XACK Error"
+    "XACK Error",
+    0
 };
 
 /* end of mds-800_sys.c */
