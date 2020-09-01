@@ -65,7 +65,7 @@ extern t_stat RAM_cfg(uint16 base, uint16 size);
 
 /* globals */
 
-int onetime = 0;
+int ipb_onetime = 0;
 
 /* extern globals */
 
@@ -106,9 +106,9 @@ t_stat SBC_config(void)
 
 t_stat SBC_reset (DEVICE *dptr)
 {    
-    if (onetime == 0) {
+    if (ipb_onetime == 0) {
         SBC_config();   
-        onetime++;
+        ipb_onetime++;
     }
     i8080_reset(&i8080_dev);
     i8251_reset(&i8251_dev);
@@ -124,17 +124,21 @@ t_stat SBC_reset (DEVICE *dptr)
 
 uint8 get_mbyte(uint16 addr)
 {
-    SET_XACK(0);                        /* set XACK */
+    SET_XACK(0);                        /* clear xack */
     if (addr >= 0xF800) {               //monitor ROM - always there
+        SET_XACK(1);                    //set xack
         return EPROM_get_mbyte(addr - 0xF000, 0); //top half of EPROM
     }
     if ((addr < 0x1000) && ((ipc_cont_unit.u3 & 0x04) == 0)) { //startup
+        SET_XACK(1);                    //set xack
         return EPROM_get_mbyte(addr, 0);   //top half of EPROM for boot
     }
     if ((addr >= 0xE800) && (addr < 0xF000) && ((ipc_cont_unit.u3 & 0x10) == 0)) { //diagnostic ROM
+        SET_XACK(1);                    //set xack
         return EPROM_get_mbyte(addr - 0xE800, 0); //bottom half of EPROM
     }
     if (addr < 0x8000) {                //IPB RAM
+        SET_XACK(1);                    //set xack
         return RAM_get_mbyte(addr);
     }
     return multibus_get_mbyte(addr);    //check multibus cards
@@ -166,6 +170,7 @@ void put_mbyte(uint16 addr, uint8 val)
         return;                         //do nothing
     }
     if (addr < 0x8000) {
+        SET_XACK(1);                    //set xack
         RAM_put_mbyte(addr, val);       //IPB RAM
         return;
     }

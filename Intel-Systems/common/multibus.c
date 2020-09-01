@@ -240,7 +240,7 @@ struct idev dev_table[256] = {
 
 uint8 nulldev(t_bool io, uint8 data, uint8 devnum)
 {
-    SET_XACK(0);                        /* set no XACK */
+    SET_XACK(0);                        //clear xack
 //    return 0xff;                        /* multibus has active high pullups and inversion */
     return 0;                           //corrects "illegal disk at port X8H" error in ISIS
 }
@@ -279,6 +279,7 @@ uint8 multibus_get_mbyte(uint16 addr)
         if ((isbc464_dev.flags & DEV_DIS) == 0) { //ROM is enabled
             if (addr >= isbc464_dev.units->BASE_ADDR && addr < 
                 (isbc464_dev.units->BASE_ADDR + isbc464_dev.units->capac))
+                SET_XACK(1);            //set xack
                 return(isbc464_get_mbyte(addr));
         }
     #endif
@@ -286,6 +287,7 @@ uint8 multibus_get_mbyte(uint16 addr)
         if ((isbc064_dev.flags & DEV_DIS) == 0) { //RAM is enabled
             if (addr >= isbc064_dev.units->BASE_ADDR && addr < 
                 (isbc064_dev.units->BASE_ADDR + isbc064_dev.units->capac))
+                SET_XACK(1);            //set xack
                 return (isbc064_get_mbyte(addr));
         }
     #endif
@@ -299,6 +301,7 @@ void multibus_put_mbyte(uint16 addr, uint8 val)
         if ((isbc064_dev.flags & DEV_DIS) == 0) { //device is enabled
             if (addr >= isbc064_dev.units->BASE_ADDR && addr < 
                 (isbc064_dev.units->BASE_ADDR + isbc064_dev.units->capac))
+                SET_XACK(1);            //set xack
                 isbc064_put_mbyte(addr, val);
         }
     #endif
