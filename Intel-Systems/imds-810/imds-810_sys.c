@@ -88,7 +88,7 @@ DEVICE *sim_devices[] = {
     NULL
 };
 
-const char *sim_stop_messages[] = {
+const char *sim_stop_messages[SCPE_BASE] = {
     "Unknown error",
     "Reserved Instruction",
     "HALT instruction",
@@ -96,8 +96,7 @@ const char *sim_stop_messages[] = {
     "Invalid Opcode",
     "Unknown I/O Instruction",
     "Invalid Memory",
-    "XACK Error",
-    0
+    "XACK Error"
 };
 
 /* end of mds-800_sys.c */
