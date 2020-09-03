@@ -666,7 +666,11 @@ DEVICE isbc208_dev = {
     0,                          //dctrl 
     isbc208_debug,              //debflags
     NULL,                       //msize
-    NULL                        //lname
+    NULL,               //lname
+    NULL,               //help routine
+    NULL,               //attach help routine
+    NULL,               //help context
+    NULL                //device description
 };
  
 /* Service routines to handle simulator functions */

@@ -128,7 +128,7 @@
 
 #include "system_defs.h"                /* system header in system dir */
 
-#if defined (SBC206_NUM) && (SBC206_NUM > 0)
+//#if defined (SBC206_NUM) && (SBC206_NUM > 0)
 
 #define UNIT_V_WPMODE   (UNIT_V_UF)     /* Write protect */
 #define UNIT_WPMODE     (1 << UNIT_V_WPMODE)
@@ -219,7 +219,7 @@ typedef    struct    {                  //HDD definition
     }    HDDDEF;
 
 typedef    struct    {                  //HDC definition
-    uint8  baseport;                    //HDC base port
+    uint8   baseport;                   //HDC base port
     uint8   intnum;                     //interrupt number
     uint8   verb;                       //verbose flag
     uint16  iopb;                       //HDC IOPB
@@ -276,7 +276,11 @@ DEBTAB isbc206_debug[] = {
 };
 
 /* address width is set to 16 bits to use devices in 8086/8088 implementations */
-
+//#if defined (SBC206_NUM) && (SBC206_NUM > 0)
+//#define DEFAULT_ENABLE 0
+//#else
+#define DEFAULT_ENABLE DEV_DIS
+//#endif
 DEVICE isbc206_dev = {
     "SBC206",           //name
     isbc206_unit,       //units
@@ -295,11 +299,15 @@ DEVICE isbc206_dev = {
     &isbc206_attach,    //attach  
     NULL,               //detach
     NULL,               //ctxt
-    DEV_DEBUG+DEV_DISABLE+DEV_DIS, //flags 
+    DEV_DEBUG+DEV_DISABLE+DEFAULT_ENABLE, //flags 
     0,                  //dctrl 
     isbc206_debug,      //debflags
     NULL,               //msize
-    NULL                //lname
+    NULL,               //lname
+    NULL,               //help routine
+    NULL,               //attach help routine
+    NULL,               //help context
+    NULL                //device description
 };
 
 /* isbc206 set mode = Write protect */
@@ -411,7 +419,7 @@ t_stat isbc206_reset(DEVICE *dptr)
         reg_dev(isbc206r3, hdc206.baseport + 3, 0);     //read rstl byte 
         reg_dev(isbc206r7, hdc206.baseport + 7, 0);     //write reset fdc201
         isbc206_reset_dev(); //software reset
-        if (hdc206.verb)
+//        if (hdc206.verb)
             sim_printf("    sbc206: Enabled base port at 0%02XH  Interrupt #=%02X  %s\n",
             hdc206.baseport, hdc206.intnum, hdc206.verb ? "Verbose" : "Quiet" );
     } else {
@@ -420,7 +428,7 @@ t_stat isbc206_reset(DEVICE *dptr)
         unreg_dev(hdc206.baseport + 2);     //write IOPB addr-h and start 
         unreg_dev(hdc206.baseport + 3);     //read rstl byte 
         unreg_dev(hdc206.baseport + 7);     //write reset fdc201
-        if (hdc206.verb)
+//        if (hdc206.verb)
             sim_printf("    sbc206: Disabled\n");
     }
     return SCPE_OK;
@@ -699,6 +707,6 @@ void isbc206_diskio(void)
     }
 }
 
-#endif /* SBC206_NUM > 0 */
+//#endif /* SBC206_NUM > 0 */
 
 /* end of isbc206.c */

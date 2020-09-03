@@ -36,13 +36,13 @@ extern DEVICE i8255_dev;
 extern DEVICE EPROM_dev;
 extern DEVICE RAM_dev;
 extern DEVICE multibus_dev;
+extern DEVICE isbc064_dev;
+extern DEVICE isbc464_dev;
 extern DEVICE isbc201_dev;
 extern DEVICE isbc202_dev;
 extern DEVICE isbc206_dev;
 extern DEVICE isbc208_dev;
 extern DEVICE zx200a_dev;
-extern DEVICE isbc064_dev;
-extern DEVICE isbc464_dev;
 
 /* SCP data structures
 
@@ -66,27 +66,13 @@ DEVICE *sim_devices[] = {
     &i8251_dev,
     &i8255_dev,
     &multibus_dev,
-#if defined (SBC064_NUM) && (SBC064_NUM > 0)
     &isbc064_dev,
-#endif
-#if defined (SBC464_NUM) && (SBC464_NUM > 0)
     &isbc464_dev,
-#endif
-#if defined (SBC201_NUM) && (SBC201_NUM > 0)
     &isbc201_dev,
-#endif
-#if defined (SBC202_NUM) && (SBC202_NUM > 0)
     &isbc202_dev,
-#endif
-#if defined (SBC206_NUM) && (SBC206_NUM > 0)
     &isbc206_dev,
-#endif
-#if defined (SBC208_NUM) && (SBC208_NUM > 0)
     &isbc208_dev,
-#endif
-#if defined (ZX200A_NUM) && (ZX200A_NUM > 0)
     &zx200a_dev,
-#endif
     NULL
 };
 

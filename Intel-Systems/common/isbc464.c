@@ -88,7 +88,7 @@ DEVICE isbc464_dev = {
     "SBC464",           //name
     &isbc464_unit,      //units
     NULL,               //registers
-    isbc464_mod,       //modifiers
+    isbc464_mod,        //modifiers
     1,                  //numunits
     16,                 //aradix
     16,                 //awidth
@@ -106,7 +106,11 @@ DEVICE isbc464_dev = {
     0,                  //dctrl
     isbc464_debug,      //debflags
     NULL,               //msize
-    NULL                //lname
+    NULL,               //lname
+    NULL,               //help routine
+    NULL,               //attach help routine
+    NULL,               //help context
+    NULL                //device description
 };
 
 /* isbc464 globals */
@@ -193,13 +197,13 @@ t_stat isbc464_show_param (FILE *st, UNIT *uptr, int32 val, CONST void *desc)
 
 t_stat isbc464_reset (DEVICE *dptr)
 {
+    if (dptr == NULL)
+        return SCPE_ARG;
     if (isbc464_onetime) {
         isbc464_dev.units->capac = SBC464_SIZE; //set default size
         isbc464_dev.units->BASE_ADDR = SBC464_BASE; //set default base
         isbc464_onetime = 0;
     }
-    if (dptr == NULL)
-        return SCPE_ARG;
     if ((dptr->flags & DEV_DIS) == 0) { //already enabled
         isbc464_dev.units->filebuf = (uint8 *)calloc(isbc464_dev.units->capac, sizeof(uint8)); //alloc buffer
         if (isbc464_dev.units->filebuf == NULL) { //CALLOC error

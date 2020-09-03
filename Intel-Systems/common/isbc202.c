@@ -393,7 +393,7 @@ t_stat isbc202_set_verb(UNIT *uptr, int32 val, CONST char *cptr, void *desc)
     }
     if (strncasecmp(cptr, "ON", 3) == 0) {
         fdc202.verb = 1;
-        sim_printf("   SBC202: fdc202.verb=%d\n", fdc202.verb);
+        sim_printf("SBC202: fdc202.verb=%d\n", fdc202.verb);
         return SCPE_OK;
     }
     return SCPE_ARG;
