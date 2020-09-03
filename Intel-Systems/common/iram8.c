@@ -47,7 +47,7 @@ void RAM_put_mbyte(uint16 addr, uint8 val);
 
 /* SIMH RAM Standard I/O Data Structures */
 
-UNIT RAM_unit = { UDATA (NULL, UNIT_BINK, 0), KBD_POLL_WAIT };
+UNIT RAM_unit = { UDATA (NULL, UNIT_BINK, 0) };
 
 DEBTAB RAM_debug[] = {
     { "ALL", DEBUG_all },
@@ -82,7 +82,11 @@ DEVICE RAM_dev = {
     0,                  //dctrl
     RAM_debug,          //debflags
     NULL,               //msize
-    NULL                //lname
+    NULL,               //lname
+    NULL,               //help routine
+    NULL,               //attach help routine
+    NULL,               //help context
+    NULL                //device description
 };
 
 /* RAM functions */

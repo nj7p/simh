@@ -41,6 +41,7 @@
 /* function prototypes */
 
 t_stat EPROM_cfg (uint16 base, uint16 size, uint8 devnum);
+t_stat EPROM_show_param (FILE *st, UNIT *uptr, int32 val, CONST void *desc);
 t_stat EPROM_attach (UNIT *uptr, CONST char *cptr);
 t_stat EPROM_reset (DEVICE *dptr);
 uint8 EPROM_get_mbyte (uint16 addr, uint8 devnum);
@@ -54,8 +55,18 @@ uint8 EPROM_get_mbyte (uint16 addr, uint8 devnum);
 /* SIMH EPROM Standard I/O Data Structures */
 
 UNIT EPROM_unit[] = {
-    {UDATA (NULL, UNIT_ATTABLE+UNIT_BINK+UNIT_ROABLE+UNIT_RO+UNIT_BUFABLE+UNIT_MUSTBUF, 0), 0},
-    {UDATA (NULL, UNIT_ATTABLE+UNIT_BINK+UNIT_ROABLE+UNIT_RO+UNIT_BUFABLE+UNIT_MUSTBUF, 0), 0}
+    {UDATA (NULL, UNIT_ATTABLE+UNIT_BINK+UNIT_ROABLE+UNIT_RO+UNIT_BUFABLE+UNIT_MUSTBUF, 0) },
+    {UDATA (NULL, UNIT_ATTABLE+UNIT_BINK+UNIT_ROABLE+UNIT_RO+UNIT_BUFABLE+UNIT_MUSTBUF, 0) }
+};
+
+MTAB EPROM_mod[] = {
+//    { MTAB_XTD | MTAB_VDV, 0, NULL, "SIZE", &isbc464_set_size,
+//        NULL, NULL, "Sets the ROM size for EPROM"               },
+//    { MTAB_XTD | MTAB_VDV, 0, NULL, "BASE", &isbc464_set_base,
+//        NULL, NULL, "Sets the ROM base for EPROM"               },
+    { MTAB_XTD|MTAB_VDV, 0, "PARAM", NULL, NULL, &EPROM_show_param, NULL, 
+        "Parameters" },
+    { 0 }
 };
 
 DEBTAB EPROM_debug[] = {
@@ -73,7 +84,7 @@ DEVICE EPROM_dev = {
     "EPROM",            //name
     EPROM_unit,         //units
     NULL,               //registers
-    NULL,               //modifiers
+    EPROM_mod,          //modifiers
     EPROM_NUM,          //numunits
     16,                 //aradix
     16,                 //awidth
@@ -120,6 +131,16 @@ t_stat EPROM_reset (DEVICE *dptr)
     
 //    for (devnum = 0; devnum <= EPROM_NUM; devnum++) {
 //    }
+    return SCPE_OK;
+}
+
+// show configuration parameters
+
+t_stat EPROM_show_param (FILE *st, UNIT *uptr, int32 val, CONST void *desc)
+{
+    fprintf(st, "%s Size=%04X  Base=%04X  ", 
+        ((EPROM_dev.flags & DEV_DIS) == 0) ? "Enabled" : "Disabled", 
+        uptr->capac, uptr->u3);
     return SCPE_OK;
 }
 

@@ -261,7 +261,7 @@ uint8 reg_dev(uint8 (*routine)(t_bool io, uint8 data, uint8 devnum), uint8 port,
 uint8 unreg_dev(uint8 port)
 {
     if (dev_table[port].routine == &nulldev) { /* port already free */
-        sim_printf("    I/O Port %02X is already free\n", port);
+        ;//sim_printf("    I/O Port %02X is already free\n", port);
     } else {
         dev_table[port].routine = &nulldev;
         dev_table[port].devnum = 0;

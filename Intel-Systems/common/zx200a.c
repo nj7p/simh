@@ -354,10 +354,6 @@ t_stat zx200a_set_mode (UNIT *uptr, int32 val, CONST char *cptr, void *desc)
     return SCPE_OK;
 }
 
-/*  I/O instruction handlers, called from the CPU module when an
-    IN or OUT instruction is issued.
-*/
-
 /* Service routines to handle simulator functions */
 
 // set base address parameter
@@ -422,6 +418,10 @@ t_stat zx200a_show_param (FILE *st, UNIT *uptr, int32 val, CONST void *desc)
     return SCPE_OK;
 }
 
+/*  I/O instruction handlers, called from the CPU module when an
+    IN or OUT instruction is issued.
+*/
+
 /* Hardware reset routine */
 
 t_stat zx200a_reset(DEVICE *dptr)
@@ -454,7 +454,7 @@ t_stat zx200a_reset(DEVICE *dptr)
         reg_dev(zx200ar3, zx200a.baseport + 19, 0); //read rstl byte 
         reg_dev(zx200ar7, zx200a.baseport + 23, 0); //write reset zx200a
         zx200a_reset_dev(); //software reset
-        if (zx200a.verb)
+//        if (zx200a.verb)
             sim_printf("    ZX200A: Enabled base port at 0%02XH  Interrupt #=%02X  %s\n",
             zx200a.baseport, zx200a.intnum, zx200a.verb ? "Verbose" : "Quiet" );
     } else {
@@ -468,7 +468,7 @@ t_stat zx200a_reset(DEVICE *dptr)
         unreg_dev(zx200a.baseport + 18);    //write IOPB addr-h and start 
         unreg_dev(zx200a.baseport + 19);    //read rstl byte 
         unreg_dev(zx200a.baseport + 23);    //write reset fdc201
-        if (zx200a.verb)
+//        if (zx200a.verb)
             sim_printf("    ZX200A: Disabled\n");
     }
     return SCPE_OK;

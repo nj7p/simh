@@ -56,7 +56,7 @@
 /* set the base I/O address for the iSBC 201 */
 #define SBC201_BASE     0x88
 #define SBC201_INT      INT_3
-#define SBC201_NUM      0
+#define SBC201_NUM      1
 
 /* set the base I/O address for the iSBC 202 */
 #define SBC202_BASE     0x78
@@ -66,17 +66,17 @@
 /* set the base I/O address for the iSBC 206 */
 #define SBC206_BASE     0x68
 #define SBC206_INT      INT_1
-#define SBC206_NUM      0
+#define SBC206_NUM      1
 
 /* set the base I/O address for the iSBC 208 */
 #define SBC208_BASE     0x40
 #define SBC208_INT      INT_1
-#define SBC208_NUM      0
+#define SBC208_NUM      1
 
 /* set the base for the ZX-200a disk controller */
 #define ZX200A_BASE     0x78
 #define ZX200A_INT      INT_2
-#define ZX200A_NUM      0
+#define ZX200A_NUM      1
 
 /* set the base and size for the iSBC 064 */
 #define SBC064_BASE     0x0000
@@ -86,7 +86,7 @@
 /* set the base and size for the iSBC 464 ROM */
 #define SBC464_BASE     0xA800
 #define SBC464_SIZE     0x47FF
-#define SBC464_NUM      0
+#define SBC464_NUM      1
 
 /* set INTR for CPU */
 #define INTR            INT_2
