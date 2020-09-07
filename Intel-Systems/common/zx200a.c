@@ -139,8 +139,6 @@
 
 #include "system_defs.h"                /* system header in system dir */
 
-#if defined (ZX200A_NUM) && (ZX200A_NUM > 0)
-
 #define UNIT_V_WPMODE   (UNIT_V_UF)     /* Write protect */
 #define UNIT_WPMODE     (1 << UNIT_V_WPMODE)
 
@@ -228,10 +226,10 @@ void zx200a_diskio(void);
 /* globals */
 
 int zx200a_onetime = 1;
-
 static const char* zx200a_desc(DEVICE *dptr) {
     return zx200a_NAME;
 }
+
 typedef    struct    {                  //FDD definition
     uint8   sec;
     uint8   cyl;
@@ -303,10 +301,16 @@ DEBTAB zx200a_debug[] = {
     { NULL }
 };
 
+#if defined (ZX200A_NUM) && (ZX200A_NUM > 0)
+#define DEFAULT_ENABLE 0
+#else
+#define DEFAULT_ENABLE DEV_DIS
+#endif
+ 
 /* address width is set to 16 bits to use devices in 8086/8088 implementations */
 
 DEVICE zx200a_dev = {
-    "ZX200A",           //name
+    "zx200a",           //name
     zx200a_unit,        //units
     zx200a_reg,         //registers
     zx200a_mod,         //modifiers
@@ -323,7 +327,7 @@ DEVICE zx200a_dev = {
     &zx200a_attach,     //attach  
     NULL,               //detach
     NULL,               //ctxt
-    DEV_DISABLE+DEV_DIS, //flags 
+    DEV_DEBUG+DEV_DISABLE+DEFAULT_ENABLE, //flags 
     0,                  //dctrl 
     zx200a_debug,       //debflags
     NULL,               //msize
@@ -345,11 +349,11 @@ t_stat zx200a_set_mode (UNIT *uptr, int32 val, CONST char *cptr, void *desc)
     if (val & UNIT_WPMODE) {            /* write protect */
         uptr->flags |= val;
         if (zx200a.verb)
-            sim_printf("    sbc202: WP\n");
+            sim_printf("    ZX200A: WP\n");
     } else {                            /* read write */
         uptr->flags &= ~val;
         if (zx200a.verb)
-            sim_printf("    sbc202: RW\n");
+            sim_printf("    ZX200A: RW\n");
     }
     return SCPE_OK;
 }
@@ -367,7 +371,7 @@ t_stat zx200a_set_port(UNIT *uptr, int32 val, CONST char *cptr, void *desc)
     result = sscanf(cptr, "%02x", &size);
     zx200a.baseport = size;
     if (zx200a.verb)
-        sim_printf("SBC202: Base port=%04X\n", zx200a.baseport);
+        sim_printf("ZX200A: Base port=%04X\n", zx200a.baseport);
     return SCPE_OK;
 }
 
@@ -382,7 +386,7 @@ t_stat zx200a_set_int(UNIT *uptr, int32 val, CONST char *cptr, void *desc)
     result = sscanf(cptr, "%02x", &size);
     zx200a.intnum = size;
     if (zx200a.verb)
-        sim_printf("SBC202: Interrupt number=%04X\n", zx200a.intnum);
+        sim_printf("ZX200A: Interrupt number=%04X\n", zx200a.intnum);
     return SCPE_OK;
 }
 
@@ -398,7 +402,7 @@ t_stat zx200a_set_verb(UNIT *uptr, int32 val, CONST char *cptr, void *desc)
     }
     if (strncasecmp(cptr, "ON", 3) == 0) {
         zx200a.verb = 1;
-        sim_printf("   SBC202: zx200a.verb=%d\n", zx200a.verb);
+        sim_printf("   ZX200A: zx200a.verb=%d\n", zx200a.verb);
         return SCPE_OK;
     }
     return SCPE_ARG;
@@ -895,7 +899,5 @@ void zx200a_diskio(void)
             break;
     }
 }
-
-#endif /* ZX200A_NUM > 0 */
 
 /* end of zx-200a.c */

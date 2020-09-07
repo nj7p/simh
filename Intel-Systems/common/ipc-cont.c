@@ -33,6 +33,8 @@
 
 #include "system_defs.h"                /* system header in system dir */
 
+#define ipc_cont_NAME    "Intel IPC Controller"
+
 /* function prototypes */
 
 t_stat ipc_cont_cfg(uint8 base, uint8 devnum);
@@ -44,6 +46,10 @@ t_stat ipc_cont_reset (DEVICE *dptr);
 extern uint8 reg_dev(uint8 (*routine)(t_bool, uint8, uint8), uint8, uint8);
 
 /* globals */
+
+static const char* ipc_cont_desc(DEVICE *dptr) {
+    return ipc_cont_NAME;
+}
 
 UNIT ipc_cont_unit =
     { UDATA (0, 0, 0) };                /* ipc_cont*/
@@ -89,7 +95,7 @@ DEVICE ipc_cont_dev = {
     0,                  //dctrl
     ipc_cont_debug,     //debflags
     NULL,               //msize
-    NULL                //lname
+    NULL//&ipc_cont_desc      //device description
 };
 
 // ipc_cont configuration

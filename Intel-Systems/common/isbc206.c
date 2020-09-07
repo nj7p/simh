@@ -207,10 +207,10 @@ void isbc206_diskio(void);       //do actual disk i/o
 /* globals */
 
 int isbc206_onetime = 1;
-
 static const char* isbc206_desc(DEVICE *dptr) {
     return isbc206_NAME;
 }
+
 typedef    struct    {                  //HDD definition
     int     t0;
     int     rdy;
@@ -275,14 +275,16 @@ DEBTAB isbc206_debug[] = {
     { NULL }
 };
 
-/* address width is set to 16 bits to use devices in 8086/8088 implementations */
-//#if defined (SBC206_NUM) && (SBC206_NUM > 0)
-//#define DEFAULT_ENABLE 0
-//#else
+#if defined (SBC206_NUM) && (SBC206_NUM > 0)
+#define DEFAULT_ENABLE 0
+#else
 #define DEFAULT_ENABLE DEV_DIS
-//#endif
+#endif
+ 
+/* address width is set to 16 bits to use devices in 8086/8088 implementations */
+
 DEVICE isbc206_dev = {
-    "SBC206",           //name
+   "SBC206",           //name
     isbc206_unit,       //units
     isbc206_reg,        //registers
     isbc206_mod,        //modifiers
@@ -307,7 +309,7 @@ DEVICE isbc206_dev = {
     NULL,               //help routine
     NULL,               //attach help routine
     NULL,               //help context
-    NULL                //device description
+    &isbc206_desc       //device description
 };
 
 /* isbc206 set mode = Write protect */

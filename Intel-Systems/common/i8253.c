@@ -35,7 +35,7 @@
 
 #include "system_defs.h"
 
-#if defined (I8253_NUM) && (I8253_NUM > 0)
+#define i8253_NAME    "Intel i8253 PIT Chip"
 
 /* external globals */
 
@@ -44,6 +44,10 @@
 extern uint8 reg_dev(uint8 (*routine)(t_bool, uint8, uint8), uint8, uint8);
 
 /* globals */
+
+static const char* i8253_desc(DEVICE *dptr) {
+    return i8253_NAME;
+}
 
 /* function prototypes */
 
@@ -115,7 +119,11 @@ DEVICE i8253_dev = {
     0,                  //dctrl
     i8253_debug,        //debflags
     NULL,               //msize
-    NULL                //lname
+    NULL,               //lname
+    NULL,               //help routine
+    NULL,               //attach help routine
+    NULL,               //help context
+    &i8253_desc         //device description
 };
 
 /* Service routines to handle simulator functions */
@@ -207,7 +215,5 @@ uint8 i8253c(t_bool io, uint8 data, uint8 devnum)
     }
     return 0;
 }
-
-#endif /* I8253_NUM > 0 */
 
 /* end of i8253.c */

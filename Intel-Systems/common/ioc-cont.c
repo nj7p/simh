@@ -69,6 +69,8 @@
 #define RRSTS   0x1B    //Returns diskette result byte to master
 #define RDSTS   0x1C    //Returns diskette device status byte to master
 
+#define ioc_cont_NAME    "Intel IOC Controller"
+
 /* external globals */
 
 extern uint16    PCX;
@@ -86,6 +88,9 @@ extern uint8 reg_dev(uint8 (*routine)(t_bool, uint8, uint8), uint8, uint8);
 
 /* globals */
 
+static const char* ioc_cont_desc(DEVICE *dptr) {
+    return ioc_cont_NAME;
+}
 uint8   dbb_stat;
 uint8   dbb_cmd;
 uint8   dbb_in;
@@ -135,7 +140,7 @@ DEVICE ioc_cont_dev = {
     0,                  //dctrl
     ioc_cont_debug,     //debflags
     NULL,               //msize
-    NULL                //lname
+    NULL//&ioc_cont_desc      //device description
 };
 
 // ioc_cont configuration

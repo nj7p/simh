@@ -237,10 +237,10 @@ void isbc201_diskio(void);      //do actual disk i/o
 /* globals */
 
 int isbc201_onetime = 1;
-
 static const char* isbc201_desc(DEVICE *dptr) {
     return isbc201_NAME;
 }
+
 typedef    struct    {                  //FDD definition
     uint8   sec;
     uint8   cyl;
@@ -303,6 +303,12 @@ DEBTAB isbc201_debug[] = {
     { NULL }
 };
 
+#if defined (SBC201_NUM) && (SBC201_NUM > 0)
+#define DEFAULT_ENABLE 0
+#else
+#define DEFAULT_ENABLE DEV_DIS
+#endif
+ 
 /* address width is set to 16 bits to use devices in 8086/8088 implementations */
 
 DEVICE isbc201_dev = {
@@ -323,7 +329,7 @@ DEVICE isbc201_dev = {
     &isbc201_attach,    //attach  
     NULL,               //detach
     NULL,               //ctxt
-    DEV_DEBUG+DEV_DISABLE+DEV_DIS, //flags 
+    DEV_DEBUG+DEV_DISABLE+DEFAULT_ENABLE, //flags 
     0,                  //dctrl 
     isbc201_debug,      //debflags
     NULL,               //msize

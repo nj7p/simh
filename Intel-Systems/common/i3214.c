@@ -40,9 +40,7 @@
 
 #include "system_defs.h"
 
-#if defined (I3214_NUM) && (I3214_NUM > 0)
-
-// 3214 status bits
+#define i3214_NAME    "Intel i3214 Perpherial Interrupt Contrlooer Chip"
 
 /* external globals */
 
@@ -58,6 +56,9 @@ uint8 i3214_ram[16];
 uint8 EPROM_enable = 1;
 uint8 BUS_OVERRIDE = 0;
 uint8 monitor_boot = 0x00;
+static const char* i3214_desc(DEVICE *dptr) {
+    return i3214_NAME;
+}
 
 /* function prototypes */
 
@@ -123,7 +124,11 @@ DEVICE i3214_dev = {
     0,                  //dctrl
     i3214_debug,        //debflags
     NULL,               //msize
-    NULL                //lname
+    NULL,               //lname
+    NULL,               //help routine
+    NULL,               //attach help routine
+    NULL,               //help context
+    &i3214_desc         //device description
 };
 
 // i3214 configuration
@@ -208,7 +213,5 @@ uint8 i3214_monitor_do_boot(t_bool io, uint8 data, uint8 devnum)
         monitor_boot = data;
     return 0;
 }
-
-#endif /* I3214_NUM > 0 */
 
 /* end of i3214.c */

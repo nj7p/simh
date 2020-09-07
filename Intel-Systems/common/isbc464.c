@@ -28,14 +28,17 @@
         29 Oct 17 - Original file.
 
     NOTES:
+    
+    TO DO:
+        Set up for actual ROM sizes 2708-...
 
 */
 
 #include "system_defs.h"
 
-#if defined (SBC464_NUM) && (SBC464_NUM > 0)
-
 #define BASE_ADDR       u3    
+
+#define isbc464_NAME    "Intel iSBC 464 ROM Board"
 
 /* prototypes */
 
@@ -55,6 +58,9 @@ extern uint8 xack;                         /* XACK signal */
 /* local globals */
 
 int isbc464_onetime = 1;
+static const char* isbc464_desc(DEVICE *dptr) {
+    return isbc464_NAME;
+}
     
 /* isbc464 Standard I/O Data Structures */
 
@@ -66,7 +72,7 @@ UNIT isbc464_unit = {
 MTAB isbc464_mod[] = {
     { MTAB_XTD | MTAB_VDV, 0, NULL, "SIZE", &isbc464_set_size,
         NULL, NULL, "Sets the ROM size for iSBC464"               },
-    { MTAB_XTD | MTAB_VDV, 0, NULL, "BASE", &isbc464_set_base,
+   { MTAB_XTD | MTAB_VDV, 0, NULL, "BASE", &isbc464_set_base,
         NULL, NULL, "Sets the ROM base for iSBC464"               },
     { MTAB_XTD|MTAB_VDV, 0, "PARAM", NULL, NULL, &isbc464_show_param, NULL, 
         "Parameter" },
@@ -84,6 +90,12 @@ DEBTAB isbc464_debug[] = {
     { NULL }
 };
 
+#if defined (SBC464_NUM) && (SBC464_NUM > 0)
+#define DEFAULT_ENABLE 0
+#else
+#define DEFAULT_ENABLE DEV_DIS
+#endif
+ 
 DEVICE isbc464_dev = {
     "SBC464",           //name
     &isbc464_unit,      //units
@@ -102,7 +114,7 @@ DEVICE isbc464_dev = {
     isbc464_attach,     //attach
     NULL,               //detach
     NULL,               //ctxt
-    DEV_DISABLE+DEV_DIS, //flags
+    DEV_DEBUG+DEV_DISABLE+DEFAULT_ENABLE, //flags
     0,                  //dctrl
     isbc464_debug,      //debflags
     NULL,               //msize
@@ -110,7 +122,7 @@ DEVICE isbc464_dev = {
     NULL,               //help routine
     NULL,               //attach help routine
     NULL,               //help context
-    NULL                //device description
+    &isbc464_desc       //device description
 };
 
 /* isbc464 globals */
@@ -243,7 +255,5 @@ uint8 isbc464_get_mbyte(uint16 addr)
     val = *((uint8 *)isbc464_unit.filebuf + (addr - isbc464_unit.BASE_ADDR));
     return (val & 0xFF);
 }
-
-#endif /* SBC464_NUM > 0 */
 
 /* end of isbc464.c */

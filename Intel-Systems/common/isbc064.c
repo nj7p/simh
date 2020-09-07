@@ -37,9 +37,9 @@
 
 #include "system_defs.h"
 
-#if defined (SBC064_NUM) && (SBC064_NUM > 0)    //if board allowed with this system
-
 #define BASE_ADDR       u3    
+
+#define isbc064_NAME    "Intel iSBC 064 RAM Board"
 
 /* prototypes */
 
@@ -55,6 +55,9 @@ void isbc064_put_mbyte(uint16 addr, uint8 val);
 /* local globals */
 
 int isbc064_onetime = 1;
+static const char* isbc064_desc(DEVICE *dptr) {
+    return isbc064_NAME;
+}
 
 /* external globals */
 
@@ -108,6 +111,12 @@ DEBTAB isbc064_debug[] = {
     { NULL }
 };
 
+#if defined (SBC064_NUM) && (SBC064_NUM > 0)
+#define DEFAULT_ENABLE 0
+#else
+#define DEFAULT_ENABLE DEV_DIS
+#endif
+ 
 DEVICE isbc064_dev = {
     "SBC064",           //name
     &isbc064_unit,      //units
@@ -126,7 +135,7 @@ DEVICE isbc064_dev = {
     NULL,               //attach
     NULL,               //detach
     NULL,               //ctxt
-    DEV_DISABLE+DEV_DIS, //flags
+    DEV_DEBUG+DEV_DISABLE+DEFAULT_ENABLE, //flags
     0,                  //dctrl
     isbc064_debug,      //debflags
     NULL,               //msize
@@ -134,7 +143,7 @@ DEVICE isbc064_dev = {
     NULL,               //help routine
     NULL,               //attach help routine
     NULL,               //help context
-    NULL                //device description
+    &isbc064_desc       //device description
 };
 
 /* Service routines to handle simulator functions */
@@ -240,7 +249,5 @@ void isbc064_put_mbyte(uint16 addr, uint8 val)
     *((uint8 *)isbc064_unit.filebuf + (addr - isbc064_unit.BASE_ADDR)) = val & 0xFF;
     return;
 }
-
-#endif /* SBC064_NUM > 0 */
 
 /* end of isbc064.c */

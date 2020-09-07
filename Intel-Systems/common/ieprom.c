@@ -37,6 +37,7 @@
 */
 
 #include "system_defs.h"
+#define iEPROM_NAME    "Intel EPROM Chip"
 
 /* function prototypes */
 
@@ -51,6 +52,10 @@ uint8 EPROM_get_mbyte (uint16 addr, uint8 devnum);
 /* external globals */
 
 /* globals */
+
+static const char* iEPROM_desc(DEVICE *dptr) {
+    return iEPROM_NAME;
+}
 
 /* SIMH EPROM Standard I/O Data Structures */
 
@@ -102,7 +107,11 @@ DEVICE EPROM_dev = {
     0,                  //dctrl
     EPROM_debug,        //debflags
     NULL,               //msize
-    NULL                //lname
+    NULL,               //lname
+    NULL,               //help routine
+    NULL,               //attach help routine
+    NULL,               //help context
+    &iEPROM_desc        //device description
 };
 
 /* EPROM functions */

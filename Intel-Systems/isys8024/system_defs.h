@@ -32,6 +32,8 @@
 
 #define SET_XACK(VAL)       (xack = VAL)
 
+#define I3214_NUM       0
+
 //chip definitions for the iSBC-80/10
 /* set the base I/O address and device count  for the 8251s */
 #define I8251_BASE      0xEC
@@ -68,45 +70,45 @@
 /* set the base I/O address for the iSBC 201 */
 #define SBC201_BASE     0x78
 #define SBC201_INT      INT_1
-#define SBC201_NUM      1
+#define SBC201_NUM      0
 
 /* set the base I/O address for the iSBC 202 */
 #define SBC202_BASE     0x78
 #define SBC202_INT      INT_1
-#define SBC202_NUM      1
+#define SBC202_NUM      0
 
 /* set the base I/O address for the iSBC 206 */
 #define SBC206_BASE     0x68
 #define SBC206_INT      INT_2
-#define SBC206_NUM      1
+#define SBC206_NUM      0
 
 /* set the base for the zx-200a disk controller */
 #define ZX200A_BASE     0x78
 #define ZX200A_INT      INT_1
-#define ZX200A_NUM      1
+#define ZX200A_NUM      0
 
 /* set the base I/O address for the iSBX 218 */
 #define SBC208_BASE     0x40
 #define SBC208_INT      INT_1
-#define SBC208_NUM      1
+#define SBC208_NUM      0
 #define I8272_BASE      0xF0
-#define I8272_NUM       1
+#define I8272_NUM       0
 #define I8272_INT       INT_1
 
 /* set the base I/O address for the iSBC 208 */
 #define SBC208_BASE     0x40
 #define SBC208_INT      INT_1
-#define SBC208_NUM      1
+#define SBC208_NUM      0
 
 /* set the base and size for the iSBC 064 */
 #define SBC064_BASE     0x0000
 #define SBC064_SIZE     0xFFFF
-#define SBC064_NUM      1
+#define SBC064_NUM      0
 
 /* set the base and size for the iSBC 464 ROM */
 #define SBC464_BASE     0xA800
 #define SBC464_SIZE     0x47FF
-#define SBC464_NUM      1
+#define SBC464_NUM      0
 
 /* multibus interrupt definitions */
 

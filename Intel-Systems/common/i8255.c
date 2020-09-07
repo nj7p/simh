@@ -77,7 +77,7 @@
 
 #include "system_defs.h"                /* system header in system dir */
 
-#if defined (I8255_NUM) && (I8255_NUM > 0)
+#define i8255_NAME    "Intel i8255 PIA Chip"
 
 /* internal function prototypes */
 
@@ -93,6 +93,10 @@ uint8 i8255s(t_bool io, uint8 data, uint8 devnum);
 extern uint8 reg_dev(uint8 (*routine)(t_bool, uint8, uint8), uint8, uint8);
 
 /* globals */
+
+static const char* i8255_desc(DEVICE *dptr) {
+    return i8255_NAME;
+}
 
 /* these bytes represent the input and output to/from a port instance */
 
@@ -166,7 +170,11 @@ DEVICE i8255_dev = {
     0,                  //dctrl
     i8255_debug,        //debflags
     NULL,               //msize
-    NULL                //lname
+    NULL,               //lname
+    NULL,               //help routine
+    NULL,               //attach help routine
+    NULL,               //help context
+    &i8255_desc         //device description
 };
 
 // i8255 configuration
@@ -269,7 +277,5 @@ uint8 i8255c(t_bool io, uint8 data, uint8 devnum)
     }
     return 0;
 }
-
-#endif /* I8255_NUM > 0 */
 
 /* end of i8255.c */

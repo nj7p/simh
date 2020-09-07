@@ -157,6 +157,8 @@
 #define BYTE_R  0xFF
 #define WORD_R  0xFFFF
 
+#define i8080_NAME    "Intel i8080/85 Processor Chip"
+
 /* storage for the rest of the registers */
 uint32 PSW = 0;                         /* program status word */
 uint32 A = 0;                           /* accumulator */
@@ -177,6 +179,10 @@ uint16 port;                            //port used in any IN/OUT
 uint16 addr;                            //addr used for operand fetch
 uint32 IR;
 uint16 devnum = 0;
+
+static const char* i8080_desc(DEVICE *dptr) {
+    return i8080_NAME;
+}
 
 /* function prototypes */
 
@@ -298,7 +304,7 @@ DEVICE i8080_dev = {
     NULL,                               //help routine
     NULL,                               //attach help routine
     NULL,                               //help context
-    NULL                                //device description
+    &i8080_desc                         //device description
 };
 
 /* tables for the disassembler */
@@ -910,7 +916,7 @@ loop_end:
 
         if (uptr->flags & UNIT_XACK) {
             if (GET_XACK(1) == 0) {     // no XACK for operand fetch
-                reason = STOP_XACK;
+//                reason = STOP_XACK;
                 if (OP == 0xD3 || OP == 0xDB) {
                         sim_printf("\nFailed XACK for Port %02X Fetch from %04X", port, PCX);
                 } else {

@@ -397,8 +397,6 @@
  
 #include "system_defs.h"
  
-#if defined (SBC208_NUM) && (SBC208_NUM > 0)
-
 #define UNIT_V_WPMODE   (UNIT_V_UF)     /* Write protect */
 #define UNIT_WPMODE     (1 << UNIT_V_WPMODE)
  
@@ -471,6 +469,8 @@
  
 #define FDD_NUM          4
  
+#define isbc208_NAME    "Intel iSBC 208 Floppy Disk Controller Board"
+
 /* internal function prototypes */
  
 t_stat isbc208_cfg(uint8 base);
@@ -513,6 +513,13 @@ extern int32 multibus_get_mbyte(uint16 addr);
 /* external globals */
 
 extern uint16   PCX;
+
+/* globals */
+
+int isbc208_onetime = 1;
+static const char* isbc208_desc(DEVICE *dptr) {
+    return isbc208_NAME;
+}
 
 /* 8237 physical register definitions */
 uint16 i8237_r0;                        // 8237 ch 0 address register
@@ -644,6 +651,12 @@ DEBTAB isbc208_debug[] = {
     { NULL }
 };
  
+#if defined (SBC208_NUM) && (SBC208_NUM > 0)
+#define DEFAULT_ENABLE 0
+#else
+#define DEFAULT_ENABLE DEV_DIS
+#endif
+ 
 DEVICE isbc208_dev = {
     "SBC208",                   //name 
     isbc208_unit,               //units 
@@ -662,7 +675,7 @@ DEVICE isbc208_dev = {
     &isbc208_attach,            //attach  
     NULL,                       //detach
     NULL,                       //ctxt     
-    DEV_DEBUG|DEV_DISABLE|DEV_DIS, //flags 
+    DEV_DEBUG|DEV_DISABLE|DEFAULT_ENABLE, //flags 
     0,                          //dctrl 
     isbc208_debug,              //debflags
     NULL,                       //msize
@@ -670,7 +683,7 @@ DEVICE isbc208_dev = {
     NULL,               //help routine
     NULL,               //attach help routine
     NULL,               //help context
-    NULL                //device description
+    &isbc208_desc       //device description
 };
  
 /* Service routines to handle simulator functions */
@@ -1491,7 +1504,5 @@ uint8 isbc208_r15(t_bool io, uint8 data, uint8 devnum)
         return 0;
     }
 }
- 
-#endif /* SBC208_NUM > 0 */
 
 /* end of isbc208.c */

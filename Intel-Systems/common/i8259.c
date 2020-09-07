@@ -35,7 +35,7 @@
 
 #include "system_defs.h"                /* system header in system dir */
 
-#if defined (I8259_NUM) && (I8259_NUM > 0)
+#define i8259_NAME    "Intel i8259 PIC Chip"
 
 /* function prototypes */
 
@@ -46,6 +46,10 @@ void i8259_dump(uint8 devnum);
 t_stat i8259_reset (DEVICE *dptr);
 
 /* external globals */
+
+static const char* i8259_desc(DEVICE *dptr) {
+    return i8259_NAME;
+}
 
 /* external function prototypes */
 
@@ -67,6 +71,7 @@ uint8 i8259_icw4[I8259_NUM];
 uint8 i8259_ocw1[I8259_NUM];
 uint8 i8259_ocw2[I8259_NUM];
 uint8 i8259_ocw3[I8259_NUM];
+
 uint8 icw_num0 = 1, icw_num1 = 1;
 
 /* i8259 Standard I/O Data Structures */
@@ -129,7 +134,11 @@ DEVICE i8259_dev = {
     0,                  //dctrl
     i8259_debug,        //debflags
     NULL,               //msize
-    NULL                //lname
+    NULL,               //lname
+    NULL,               //help routine
+    NULL,               //attach help routine
+    NULL,               //help context
+    &i8259_desc         //device description
 };
 
 /*  I/O instruction handlers, called from the CPU module when an
@@ -245,7 +254,5 @@ void i8259_dump(uint8 devnum)
     sim_printf(" OCW2=%02X", i8259_ocw2[devnum]);
     sim_printf(" OCW3=%02X\n", i8259_ocw3[devnum]);
 }
-
-#endif /* I8259_NUM > 0 */
 
 /* end of i8259.c */

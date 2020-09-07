@@ -24,7 +24,7 @@
         in this Software without prior written authorization from William A. Beech.
 
     5 October 2017 - Original file.
-*/
+*/ 
 
 #include <stdio.h>
 #include <ctype.h>
@@ -51,6 +51,11 @@
 #define RAM_BASE        0x0000
 #define RAM_SIZE        0x37ff
 #define RAM_DISABLE     0
+
+#define I8251_NUM       0
+#define I8253_NUM       0
+#define I8255_NUM       0
+#define I8259_NUM       0
 
 //board definitions for the multibus
 /* set the base I/O address for the iSBC 201 */

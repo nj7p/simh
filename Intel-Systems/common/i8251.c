@@ -123,6 +123,8 @@
 #define TXE         0x04
 #define SD          0x40
 
+#define i8251_NAME    "Intel i8251 UART Chip"
+
 /* external globals */
 
 /* external function prototypes */
@@ -130,6 +132,10 @@
 extern uint8 reg_dev(uint8 (*routine)(t_bool, uint8, uint8), uint8, uint8);
 
 /* globals */
+
+static const char* i8251_desc(DEVICE *dptr) {
+    return i8251_NAME;
+}
 
 /* function prototypes */
 
@@ -215,7 +221,7 @@ DEVICE i8251_dev = {
     NULL,               //help routine
     NULL,               //attach help routine
     NULL,               //help context
-    NULL                //device description
+    &i8251_desc         //device description
 };
 
 // i8251 configuration

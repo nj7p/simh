@@ -145,8 +145,6 @@
 
 #include "system_defs.h"                /* system header in system dir */
 
-#if defined (SBC202_NUM) && (SBC202_NUM > 0)
-
 #define UNIT_V_WPMODE   (UNIT_V_UF)     /* Write protect */
 #define UNIT_WPMODE     (1 << UNIT_V_WPMODE)
 
@@ -229,7 +227,6 @@ void isbc202_diskio(void);      //do actual disk i/o
 /* globals */
 
 int isbc202_onetime = 1;
-
 static const char* isbc202_desc(DEVICE *dptr) {
     return isbc202_NAME;
 }
@@ -299,6 +296,12 @@ DEBTAB isbc202_debug[] = {
     { NULL }
 };
 
+#if defined (SBC202_NUM) && (SBC202_NUM > 0)
+#define DEFAULT_ENABLE 0
+#else
+#define DEFAULT_ENABLE DEV_DIS
+#endif
+ 
 /* address width is set to 16 bits to use devices in 8086/8088 implementations */
 
 DEVICE isbc202_dev = {
@@ -319,7 +322,7 @@ DEVICE isbc202_dev = {
     &isbc202_attach,    //attach  
     NULL,               //detach
     NULL,               //ctxt
-    DEV_DEBUG+DEV_DISABLE+DEV_DIS, //flags 
+    DEV_DEBUG+DEV_DISABLE+DEFAULT_ENABLE, //flags 
     0,                  //dctrl 
     isbc202_debug,      //debflags
     NULL,               //msize
@@ -762,7 +765,5 @@ void isbc202_diskio(void)
             break;
     }
 }
-
-#endif /* SBC202_NUM > 0 */
 
 /* end of isbc202.c */

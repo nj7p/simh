@@ -35,6 +35,7 @@
 #include "system_defs.h"
 
 #define BASE_ADDR       u3    
+#define multibus_NAME   "Intel Multibus Interface"
 
 /* function prototypes */
 
@@ -60,6 +61,9 @@ extern void set_cpuint(int32 int_num);
 /* local globals */
 
 int32   mbirq = 0;                      /* set no multibus interrupts */
+static const char* multibus_desc(DEVICE *dptr) {
+    return multibus_NAME;
+}
 
 /* external globals */
 
@@ -117,7 +121,7 @@ DEVICE multibus_dev = {
     NULL,               //help routine
     NULL,               //attach help routine
     NULL,               //help context
-    NULL                //device description
+    &multibus_desc      //device description
 };
 
 /* Service routines to handle simulator functions */

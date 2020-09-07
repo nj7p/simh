@@ -32,14 +32,20 @@
 
 #define SET_XACK(VAL)   (xack = VAL)
 
+#define I3214_NUM       0
+
+/* set the base I/O address for the 8251 */
+#define I8251_BASE      0xFA
+#define I8251_NUM       1
+
+#define I8253_NUM       0
+
 /* set the base I/O address for the 8255 */
 #define I8255_BASE_0    0xF4
 #define I8255_BASE_1    0xEC
 #define I8255_NUM       2
 
-/* set the base I/O address for the 8251 */
-#define I8251_BASE      0xFA
-#define I8251_NUM       1
+#define I8259_NUM       0
 
 /* set the base and size for the EPROM on the MDS 220 */
 #define ROM_BASE        0x0000
