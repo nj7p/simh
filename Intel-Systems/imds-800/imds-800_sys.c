@@ -34,6 +34,8 @@ extern DEVICE i8251_dev;
 extern DEVICE i3214_dev;
 extern DEVICE EPROM_dev;
 extern DEVICE RAM_dev;
+extern DEVICE port_dev;
+extern DEVICE int_dev;
 extern DEVICE multibus_dev;
 extern DEVICE isbc064_dev;
 extern DEVICE isbc464_dev;
@@ -63,6 +65,8 @@ DEVICE *sim_devices[] = {
     &EPROM_dev,
     &i8251_dev,
     &i3214_dev,
+    &port_dev,
+    &int_dev,
     &multibus_dev,
     &isbc064_dev,
     &isbc464_dev,

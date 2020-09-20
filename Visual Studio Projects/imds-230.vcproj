@@ -35,6 +35,9 @@
 				Name="VCXMLDataGeneratorTool"
 			/>
 			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
 				Name="VCMIDLTool"
 			/>
 			<Tool
@@ -113,6 +116,9 @@
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
 			/>
 			<Tool
 				Name="VCMIDLTool"
@@ -217,15 +223,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Intel-Systems\common\int.c"
+				>
+			</File>
+			<File
 				RelativePath="..\Intel-Systems\common\ioc-cont.c"
 				>
 			</File>
 			<File
 				RelativePath="..\Intel-Systems\common\ipb.c"
-				>
-			</File>
-			<File
-				RelativePath="..\Intel-Systems\common\multibus.c"
 				>
 			</File>
 			<File
@@ -258,6 +264,14 @@
 			</File>
 			<File
 				RelativePath="..\Intel-Systems\common\isbc464.c"
+				>
+			</File>
+			<File
+				RelativePath="..\Intel-Systems\common\multibus.c"
+				>
+			</File>
+			<File
+				RelativePath="..\Intel-Systems\common\port.c"
 				>
 			</File>
 			<File

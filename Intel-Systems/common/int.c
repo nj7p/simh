@@ -1,4 +1,4 @@
-/*  multibus.c: Multibus I simulator
+/*  interp.c: Intel Interrupt simulator
 
     Copyright (c) 2010, William A. Beech
 
@@ -25,8 +25,7 @@
 
     MODIFICATIONS:
 
-        ?? ??? 10 - Original file.
-        24 Apr 15 -- Modified to use simh_debug
+        20 Sep 20 - Original file.
 
     NOTES:
 
@@ -34,27 +33,25 @@
 
 #include "system_defs.h"
 
-#define BASE_ADDR       u3    
-#define multibus_NAME   "Intel Multibus Interface"
+#define int_NAME   "Intel Interrupt Simulator"
 
 /* function prototypes */
 
-t_stat multibus_svc(UNIT *uptr);
-t_stat multibus_reset(DEVICE *dptr);
-uint8 multibus_get_mbyte(uint16 addr);
-void multibus_put_mbyte(uint16 addr, uint8 val);
+t_stat int_svc(UNIT *uptr);
+t_stat int_reset(DEVICE *dptr);
+void set_irq(int32 int_num);
+void clr_irq(int32 int_num);
 
 /* external function prototypes */
 
 extern t_stat SBC_reset(DEVICE *dptr);  /* reset the iSBC80/10 emulator */
-extern uint8 isbc064_get_mbyte(uint16 addr);
-extern void isbc064_put_mbyte(uint16 addr, uint8 val);
-extern uint8 isbc464_get_mbyte(uint16 addr);
+extern void set_cpuint(int32 int_num);
 
 /* local globals */
 
-static const char* multibus_desc(DEVICE *dptr) {
-    return multibus_NAME;
+int32   mbirq = 0;                      /* set no multibus interrupts */
+static const char* int_desc(DEVICE *dptr) {
+    return int_NAME;
 }
 
 /* external globals */
@@ -67,16 +64,16 @@ extern DEVICE isbc464_dev;
 
 /* multibus Standard SIMH Device Data Structures */
 
-UNIT multibus_unit = { 
-    UDATA (&multibus_svc, 0, 0), 1
+UNIT int_unit = { 
+    UDATA (&int_svc, 0, 0), 1
 };
 
-REG multibus_reg[] = { 
-    { HRDATA (XACK, xack, 8) },
+REG int_reg[] = { 
+    { HRDATA (MBIRQ, mbirq, 32) }, 
     { NULL }
 };
 
-DEBTAB multibus_debug[] = {
+DEBTAB int_debug[] = {
     { "ALL", DEBUG_all },
     { "FLOW", DEBUG_flow },
     { "READ", DEBUG_read },
@@ -86,10 +83,10 @@ DEBTAB multibus_debug[] = {
     { NULL }
 };
 
-DEVICE multibus_dev = {
-    "MBI",            //name 
-    &multibus_unit,     //units 
-    multibus_reg,       //registers 
+DEVICE int_dev = {
+    "INT",            //name 
+    &int_unit,     //units 
+    int_reg,       //registers 
     NULL,               //modifiers
     1,                  //numunits 
     16,                 //aradix  
@@ -99,81 +96,61 @@ DEVICE multibus_dev = {
     8,                  //dwidth
     NULL,               //examine  
     NULL,               //deposit  
-    &multibus_reset,    //reset 
+    &int_reset,    //reset 
     NULL,               //boot
     NULL,               //attach  
     NULL,               //detach
     NULL,               //ctxt     
     DEV_DEBUG,          //flags 
     0,                  //dctrl 
-    multibus_debug,     //debflags
+    int_debug,     //debflags
     NULL,               //msize
     NULL,               //lname
     NULL,               //help routine
     NULL,               //attach help routine
     NULL,               //help context
-    &multibus_desc      //device description
+    &int_desc      //device description
 };
 
 /* Service routines to handle simulator functions */
 
 /* Reset routine */
 
-t_stat multibus_reset(DEVICE *dptr)
+t_stat int_reset(DEVICE *dptr)
 {
     if (SBC_reset(NULL) == 0) { 
-        sim_printf("  Multibus: Reset\n");
-        sim_activate (&multibus_unit, multibus_unit.wait); /* activate unit */
+        sim_printf("  Interrupt: Reset\n");
+        sim_activate (&int_unit, int_unit.wait); /* activate unit */
         return SCPE_OK;
     } else {
-        sim_printf("   Multibus: SBC not selected\n");
+        sim_printf("   Interrupt: SBC not selected\n");
         return SCPE_OK;
     }
 }
 
 /* service routine - actually does the simulated interrupts */
 
-t_stat multibus_svc(UNIT *uptr)
+t_stat int_svc(UNIT *uptr)
 {
-    sim_activate (&multibus_unit, multibus_unit.wait); /* continue poll */
+    switch (mbirq) {
+        case INT_2:
+            set_cpuint(INT_R);
+            break;
+        default:
+            break;
+    }
+    sim_activate (&int_unit, int_unit.wait); /* continue poll */
     return SCPE_OK;
 }
 
-/*  get a byte from memory */
-
-uint8 multibus_get_mbyte(uint16 addr)
+void set_irq(int32 int_num)
 {
-    SET_XACK(0);                        /* set no XACK */
-    #if defined (SBC464_NUM) && (SBC464_NUM > 0)
-        if ((isbc464_dev.flags & DEV_DIS) == 0) { //ROM is enabled
-            if (addr >= isbc464_dev.units->BASE_ADDR && addr < 
-                (isbc464_dev.units->BASE_ADDR + isbc464_dev.units->capac))
-                SET_XACK(1);            //set xack
-                return(isbc464_get_mbyte(addr));
-        }
-    #endif
-    #if defined (SBC064_NUM) && (SBC064_NUM > 0)
-        if ((isbc064_dev.flags & DEV_DIS) == 0) { //RAM is enabled
-            if (addr >= isbc064_dev.units->BASE_ADDR && addr < 
-                (isbc064_dev.units->BASE_ADDR + isbc064_dev.units->capac))
-                SET_XACK(1);            //set xack
-                return (isbc064_get_mbyte(addr));
-        }
-    #endif
-    return 0;
+    mbirq |= int_num;
 }
 
-void multibus_put_mbyte(uint16 addr, uint8 val)
+void clr_irq(int32 int_num)
 {
-    SET_XACK(0);                        /* set no XACK */
-    #if defined (SBC064_NUM) && (SBC064_NUM > 0)
-        if ((isbc064_dev.flags & DEV_DIS) == 0) { //device is enabled
-            if (addr >= isbc064_dev.units->BASE_ADDR && addr < 
-                (isbc064_dev.units->BASE_ADDR + isbc064_dev.units->capac))
-                SET_XACK(1);            //set xack
-                isbc064_put_mbyte(addr, val);
-        }
-    #endif
+    mbirq &= ~int_num;
 }
 
-/* end of multibus.c */
+/* end of interp.c */

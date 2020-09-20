@@ -38,6 +38,8 @@ extern DEVICE EPROM_dev;
 extern DEVICE RAM_dev;
 extern DEVICE ipc_cont_dev;
 extern DEVICE ioc_cont_dev;
+extern DEVICE port_dev;
+extern DEVICE int_dev;
 extern DEVICE multibus_dev;
 extern DEVICE isbc064_dev;
 extern DEVICE isbc464_dev;
@@ -72,6 +74,8 @@ DEVICE *sim_devices[] = {
     &i8259_dev,
     &ipc_cont_dev,
     &ioc_cont_dev,
+    &port_dev,
+    &int_dev,
     &multibus_dev,
     &isbc064_dev,
     &isbc464_dev,
