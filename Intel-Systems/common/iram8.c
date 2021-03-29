@@ -41,11 +41,12 @@
 
 /* function prototypes */
 
+t_stat RAM_cfg(uint16 base, uint16 size, uint8 dummy);
+t_stat RAM_clr(void);
+t_stat RAM_reset (DEVICE *dptr);
 t_stat RAM_set_size(UNIT *uptr, int32 val, CONST char *cptr, void *desc);
 t_stat RAM_set_base(UNIT *uptr, int32 val, CONST char *cptr, void *desc);
 t_stat RAM_show_param (FILE *st, UNIT *uptr, int32 val, CONST void *desc);
-t_stat RAM_cfg(uint16 base, uint16 size);
-t_stat RAM_reset (DEVICE *dptr);
 uint8 RAM_get_mbyte(uint16 addr);
 void RAM_put_mbyte(uint16 addr, uint8 val);
 
@@ -102,7 +103,7 @@ DEVICE RAM_dev = {
     NULL,               //attach
     NULL,               //detach
     NULL,               //ctxt
-    DEV_DEBUG,          //flags
+    DEV_DEBUG+DEV_DISABLE+DEV_DIS, //flags 
     0,                  //dctrl
     RAM_debug,          //debflags
     NULL,               //msize
@@ -114,6 +115,37 @@ DEVICE RAM_dev = {
 };
 
 /* RAM functions */
+
+// RAM configuration
+
+t_stat RAM_cfg(uint16 base, uint16 size, uint8 dummy)
+{
+    RAM_unit.capac = size;              /* set RAM size */
+    RAM_unit.u3 = base;                 /* set RAM base */
+    RAM_unit.filebuf = (uint8 *)calloc(size, sizeof(uint8));
+    if (RAM_unit.filebuf == NULL) {
+        sim_printf ("    RAM: Calloc error\n");
+        return SCPE_MEM;
+    }
+    sim_printf("    RAM: 0%04XH bytes at base address 0%04XH\n",
+        size, base);
+    return SCPE_OK;
+}
+
+t_stat RAM_clr(void)
+{
+    RAM_unit.capac = 0;
+    RAM_unit.u3 = 0;
+    free(RAM_unit.filebuf);
+    return SCPE_OK;
+}
+
+/* RAM reset */
+
+t_stat RAM_reset (DEVICE *dptr)
+{
+    return SCPE_OK;
+}
 
 // set size parameter
 
@@ -165,32 +197,11 @@ t_stat RAM_set_base(UNIT *uptr, int32 val, CONST char *cptr, void *desc)
 
 t_stat RAM_show_param (FILE *st, UNIT *uptr, int32 val, CONST void *desc)
 {
-    fprintf(st, "%s  Size=%04XH  Base=%04XH", 
+    if (uptr == NULL)
+        return SCPE_ARG;
+    fprintf(st, "%s at Base Address 0%04XH (%dD) for 0%04XH (%dD) Bytes ", 
         ((RAM_dev.flags & DEV_DIS) == 0) ? "Enabled" : "Disabled", 
-        RAM_unit.capac, RAM_unit.BASE_ADDR);
-    return SCPE_OK;
-}
-
-// RAM configuration
-
-t_stat RAM_cfg(uint16 base, uint16 size)
-{
-    RAM_unit.capac = size;              /* set RAM size */
-    RAM_unit.u3 = base;                 /* set RAM base */
-    RAM_unit.filebuf = (uint8 *)calloc(size, sizeof(uint8));
-    if (RAM_unit.filebuf == NULL) {
-        sim_printf ("    RAM: Calloc error\n");
-        return SCPE_MEM;
-    }
-    sim_printf("    RAM: 0%04XH bytes at base 0%04XH\n",
-        size, base);
-    return SCPE_OK;
-}
-
-/* RAM reset */
-
-t_stat RAM_reset (DEVICE *dptr)
-{
+        RAM_unit.u3, RAM_unit.u3, RAM_unit.capac, RAM_unit.capac);
     return SCPE_OK;
 }
 

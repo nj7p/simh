@@ -42,6 +42,8 @@
 
 /* prototypes */
 
+t_stat isbc464_cfg(uint16 base, uint16 size, uint8 dummy);
+t_stat isbc464_clr(void);
 t_stat isbc464_set_base(UNIT *uptr, int32 val, CONST char *cptr, void *desc);
 t_stat isbc464_set_size(UNIT *uptr, int32 val, CONST char *cptr, void *desc);
 t_stat isbc464_show_param (FILE *st, UNIT *uptr, int32 val, CONST void *desc);
@@ -65,8 +67,7 @@ static const char* isbc464_desc(DEVICE *dptr) {
 /* isbc464 Standard I/O Data Structures */
 
 UNIT isbc464_unit = {
-    UDATA (NULL, UNIT_ATTABLE+UNIT_BINK+UNIT_ROABLE+UNIT_RO+UNIT_BUFABLE+
-        UNIT_MUSTBUF, 0)
+    UDATA (NULL, UNIT_ATTABLE+UNIT_BINK+UNIT_ROABLE+UNIT_RO+UNIT_BUFABLE+UNIT_MUSTBUF, 0)
 };
 
 MTAB isbc464_mod[] = {
@@ -90,12 +91,6 @@ DEBTAB isbc464_debug[] = {
     { NULL }
 };
 
-#if defined (SBC464_NUM) && (SBC464_NUM > 0)
-#define DEFAULT_ENABLE 0
-#else
-#define DEFAULT_ENABLE DEV_DIS
-#endif
- 
 DEVICE isbc464_dev = {
     "SBC464",           //name
     &isbc464_unit,      //units
@@ -114,7 +109,7 @@ DEVICE isbc464_dev = {
     isbc464_attach,     //attach
     NULL,               //detach
     NULL,               //ctxt
-    DEV_DEBUG+DEV_DISABLE+DEFAULT_ENABLE, //flags
+    DEV_DEBUG+DEV_DISABLE+DEV_DIS, //flags
     0,                  //dctrl
     isbc464_debug,      //debflags
     NULL,               //msize
@@ -126,6 +121,30 @@ DEVICE isbc464_dev = {
 };
 
 /* isbc464 globals */
+
+// isbc464 configuration
+
+t_stat isbc464_cfg(uint16 base, uint16 size, uint8 dummy)
+{
+    isbc464_unit.capac = size;
+    isbc464_unit.u3 = base; 
+    isbc464_unit.filebuf = (uint8 *)calloc(size, sizeof(uint8));
+    if (isbc464_unit.filebuf == NULL) {
+        sim_printf ("    isbc464: Calloc error\n");
+        return SCPE_MEM;
+    }
+    sim_printf("    isbc464: 0%04XH bytes at base address 0%04XH\n",
+        isbc464_unit.capac, isbc464_unit.u3);
+    return SCPE_OK;
+}
+
+t_stat isbc464_clr(void)
+{
+    isbc464_unit.capac = 0;
+    isbc464_unit.u3 = 0;
+    free(isbc464_unit.filebuf);
+    return SCPE_OK;
+}
 
 // set size parameter
 
@@ -199,7 +218,7 @@ t_stat isbc464_set_base(UNIT *uptr, int32 val, CONST char *cptr, void *desc)
 
 t_stat isbc464_show_param (FILE *st, UNIT *uptr, int32 val, CONST void *desc)
 {
-    fprintf(st, "%s Size=%04X  Base=%04X  ", 
+    fprintf(st, "%s, Size=%04X, Base=%04X ", 
         ((isbc464_dev.flags & DEV_DIS) == 0) ? "Enabled" : "Disabled", 
         uptr->capac, uptr->BASE_ADDR);
     return SCPE_OK;
@@ -224,7 +243,7 @@ t_stat isbc464_reset (DEVICE *dptr)
         }
         sim_printf("    sbc464: Enabled 0%04XH bytes at base 0%04XH\n",
             isbc464_dev.units->capac, isbc464_dev.units->BASE_ADDR);
-    } else {
+    } else { //disabled
         if (isbc464_dev.units->filebuf)
             free(isbc464_dev.units->filebuf);   //return allocated memory
         sim_printf("    sbc464: Disabled\n");

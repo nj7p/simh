@@ -218,9 +218,10 @@ extern int32 sim_int_char;
 extern uint32 sim_brk_types, sim_brk_dflt, sim_brk_summ; /* breakpoint info */
 
 struct idev {
-    uint8 (*routine)(t_bool, uint8, uint8);
-    uint8 port;
-    uint8 devnum;
+    uint8 (*routine)(t_bool io, uint8 data, uint8 devnum); 
+    uint16 port;
+    uint16 devnum;
+    uint8 dummy;
 };
 
 /* This is the I/O configuration table.  There are 256 possible
@@ -894,15 +895,15 @@ int32 sim_instr(void)
             break;
 
         case 0xDB:                  /* IN */
-            SET_XACK(1);                /* good I/O address */
+            SET_XACK(1);            /* good I/O address */
             port = fetch_byte(1);
-            A = dev_table[port].routine(0, 0, dev_table[port].devnum);
+            A = dev_table[port].routine(0, 0, dev_table[port].devnum & 0xff);
             break;
 
         case 0xD3:                  /* OUT */
-            SET_XACK(1);                /* good I/O address */
+            SET_XACK(1);            /* good I/O address */
             port = fetch_byte(1);
-            dev_table[port].routine(1, A, dev_table[port].devnum);
+            dev_table[port].routine(1, A, dev_table[port].devnum & 0xff);
             break;
 
         default:                    /* undefined opcode */ 

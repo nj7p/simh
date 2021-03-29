@@ -29,7 +29,7 @@
 
     NOTES:
 
-        This controller will mount 1 Hard Disk removable and three Hard Disk fixed disk 
+        This controller will mount 1 removable Hard Disk (IBM 2315)and three Hard Disk fixed disk 
         images on drives :F0: thru :F3: addressed at ports 068H to 06FH.  
 
     Registers:
@@ -170,7 +170,7 @@
 #define RB1RD1          0x80            //drive 1 ready
 
 //disk geometry values
-#define MDSHD           3796992         //hard disk HD size
+#define MDSHD           3796992         //hard disk size MB
 #define MAXSECHD        144             //hard disk last sector (2 heads/2 tracks)
 #define MAXTRKHD        206             //hard disk last track
 
@@ -182,13 +182,15 @@ extern uint16    PCX;
 
 /* external function prototypes */
 
-extern uint8 reg_dev(uint8 (*routine)(t_bool, uint8, uint8), uint8, uint8);
-extern uint8 unreg_dev(uint8);
+extern uint8 reg_dev(uint8 (*routine)(t_bool, uint8, uint8), uint16, uint16, uint8);
+extern uint8 unreg_dev(uint16 port);
 extern uint8 get_mbyte(uint16 addr);
 extern void put_mbyte(uint16 addr, uint8 val);
 
 /* function prototypes */
 
+t_stat isbc206_cfg(uint16 base, uint16 size, uint8 devnum);
+t_stat isbc206_clr(void);
 t_stat isbc206_set_port(UNIT *uptr, int32 val, CONST char *cptr, void *desc);
 t_stat isbc206_set_int(UNIT *uptr, int32 val, CONST char *cptr, void *desc);
 t_stat isbc206_set_verb(UNIT *uptr, int32 val, CONST char *cptr, void *desc);
@@ -236,8 +238,8 @@ HDCDEF    hdc206;                       //indexed by the isbc-206 instance numbe
 
 
 UNIT isbc206_unit[] = {                 // 2 HDDs
-    { UDATA (0, UNIT_ATTABLE+UNIT_DISABLE+UNIT_BUFABLE+UNIT_MUSTBUF|UNIT_FIX, MDSHD) }, 
-    { UDATA (0, UNIT_ATTABLE+UNIT_DISABLE+UNIT_BUFABLE+UNIT_MUSTBUF|UNIT_FIX, MDSHD) }, 
+    { UDATA (0, UNIT_ATTABLE+UNIT_DISABLE+UNIT_ROABLE+UNIT_RO+UNIT_BUFABLE+UNIT_MUSTBUF+UNIT_FIX, MDSHD) }, 
+    { UDATA (0, UNIT_ATTABLE+UNIT_DISABLE+UNIT_ROABLE+UNIT_RO+UNIT_BUFABLE+UNIT_MUSTBUF+UNIT_FIX, MDSHD) }, 
     { NULL }
 };
 
@@ -275,12 +277,6 @@ DEBTAB isbc206_debug[] = {
     { NULL }
 };
 
-#if defined (SBC206_NUM) && (SBC206_NUM > 0)
-#define DEFAULT_ENABLE 0
-#else
-#define DEFAULT_ENABLE DEV_DIS
-#endif
- 
 /* address width is set to 16 bits to use devices in 8086/8088 implementations */
 
 DEVICE isbc206_dev = {
@@ -301,7 +297,7 @@ DEVICE isbc206_dev = {
     &isbc206_attach,    //attach  
     NULL,               //detach
     NULL,               //ctxt
-    DEV_DEBUG+DEV_DISABLE+DEFAULT_ENABLE, //flags 
+    DEV_DEBUG+DEV_DISABLE+DEV_DIS, //flags 
     0,                  //dctrl 
     isbc206_debug,      //debflags
     NULL,               //msize
@@ -311,6 +307,49 @@ DEVICE isbc206_dev = {
     NULL,               //help context
     &isbc206_desc       //device description
 };
+
+// iSBC 201 configuration
+
+t_stat isbc206_cfg(uint16 baseport, uint16 devnum, uint8 intnum)
+{
+    int i;
+    UNIT *uptr;
+    
+    // one-time initialization for all FDDs for this FDC instance
+    for (i = 0; i < HDD_NUM; i++) { 
+        uptr = isbc206_dev.units + i;
+        uptr->u6 = i;               //fdd unit number
+    }
+    hdc206.baseport = baseport & 0xff;  //set port
+    hdc206.intnum = intnum;             //set interrupt
+    hdc206.verb = 0;                    //clear verb
+    reg_dev(isbc206r0, hdc206.baseport, 0, 0); //read status
+    reg_dev(isbc206r1, hdc206.baseport + 1, 0, 0); //read rslt type/write IOPB addr-l
+    reg_dev(isbc206r2, hdc206.baseport + 2, 0, 0); //write IOPB addr-h and start 
+    reg_dev(isbc206r3, hdc206.baseport + 3, 0, 0); //read rstl byte 
+    reg_dev(isbc206r7, hdc206.baseport + 7, 0, 0); //write reset fdc201
+    isbc206_reset_dev();                //software reset
+//    if (hdc206.verb)
+        sim_printf("    sbc206: Enabled base port at 0%02XH, Interrupt #=%02X, %s\n",
+        hdc206.baseport, hdc206.intnum, hdc206.verb ? "Verbose" : "Quiet" );
+    return SCPE_OK;
+}
+
+// iSBC 201 deconfiguration
+
+t_stat isbc206_clr(void)
+{
+    hdc206.intnum = -1;                 //set default interrupt
+    hdc206.verb = 0;                    //set verb = 0
+    unreg_dev(hdc206.baseport);         //read status
+    unreg_dev(hdc206.baseport + 1);     //read rslt type/write IOPB addr-l
+    unreg_dev(hdc206.baseport + 2);     //write IOPB addr-h and start 
+    unreg_dev(hdc206.baseport + 3);     //read rstl byte 
+    unreg_dev(hdc206.baseport + 7);     //write reset fdc201
+//    if (hdc206.verb)
+        sim_printf("    sbc206: Disabled\n");
+    return SCPE_OK;
+}
 
 /* isbc206 set mode = Write protect */
 
@@ -398,41 +437,9 @@ t_stat isbc206_show_param (FILE *st, UNIT *uptr, int32 val, CONST void *desc)
 
 t_stat isbc206_reset(DEVICE *dptr)
 {
-    int i;
-    UNIT *uptr;
-    
     if (dptr == NULL)
         return SCPE_ARG;
-    if (isbc206_onetime) {
-        hdc206.baseport = SBC206_BASE;  //set default base
-        hdc206.intnum = SBC206_INT;     //set default interrupt
-        hdc206.verb = 0;                //set verb = 0
-        isbc206_onetime = 0;
-        // one-time initialization for all FDDs for this FDC instance
-        for (i = 0; i < HDD_NUM; i++) { 
-            uptr = isbc206_dev.units + i;
-            uptr->u6 = i;               //fdd unit number
-        }
-    }
-    if ((dptr->flags & DEV_DIS) == 0) { // enabled
-        reg_dev(isbc206r0, hdc206.baseport, 0);         //read status
-        reg_dev(isbc206r1, hdc206.baseport + 1, 0);     //read rslt type/write IOPB addr-l
-        reg_dev(isbc206r2, hdc206.baseport + 2, 0);     //write IOPB addr-h and start 
-        reg_dev(isbc206r3, hdc206.baseport + 3, 0);     //read rstl byte 
-        reg_dev(isbc206r7, hdc206.baseport + 7, 0);     //write reset fdc201
-        isbc206_reset_dev(); //software reset
-//        if (hdc206.verb)
-            sim_printf("    sbc206: Enabled base port at 0%02XH  Interrupt #=%02X  %s\n",
-            hdc206.baseport, hdc206.intnum, hdc206.verb ? "Verbose" : "Quiet" );
-    } else {
-        unreg_dev(hdc206.baseport);         //read status
-        unreg_dev(hdc206.baseport + 1);     //read rslt type/write IOPB addr-l
-        unreg_dev(hdc206.baseport + 2);     //write IOPB addr-h and start 
-        unreg_dev(hdc206.baseport + 3);     //read rstl byte 
-        unreg_dev(hdc206.baseport + 7);     //write reset fdc201
-//        if (hdc206.verb)
-            sim_printf("    sbc206: Disabled\n");
-    }
+    isbc206_reset_dev(); //software reset
     return SCPE_OK;
 }
 
@@ -611,7 +618,7 @@ void isbc206_diskio(void)
         hdc206.rtype = ROK;
         hdc206.rbyte0 = RB0ADR;
         hdc206.intff = 1;           //set interrupt FF
-        sim_printf("\n   SBC206: FDD %d - Address error sa=%02X nr=%02X ta=%02X PCX=%04X",
+        sim_printf("\n   SBC206: HDD %d - Address error sa=%02X nr=%02X ta=%02X PCX=%04X",
             hddnum, sa, nr, ta, PCX);
         return;
     }

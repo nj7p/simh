@@ -43,6 +43,8 @@
 
 /* prototypes */
 
+t_stat isbc064_cfg(uint16 base, uint16 size, uint8 dummy);
+t_stat isbc064_clr(void);
 t_stat isbc064_set_size(UNIT *uptr, int32 val, CONST char *cptr, void *desc);
 t_stat isbc064_set_base(UNIT *uptr, int32 val, CONST char *cptr, void *desc);
 t_stat isbc064_show_param (FILE *st, UNIT *uptr, int32 val, CONST void *desc);
@@ -54,7 +56,6 @@ void isbc064_put_mbyte(uint16 addr, uint8 val);
 
 /* local globals */
 
-int isbc064_onetime = 1;
 static const char* isbc064_desc(DEVICE *dptr) {
     return isbc064_NAME;
 }
@@ -77,7 +78,7 @@ MTAB isbc064_mod[] = {
     &isbc064_set_size,                  /* validation routine */
     NULL,                               /* display routine */
     NULL,                               /* location descriptor */
-    "Sets the RAM size for iSB 064"     /* help string */
+    "Sets the RAM size for iSBC 064"    /* help string */
 },
     { MTAB_XTD | MTAB_VDV,              /* mask */ 
     0                                   /* match */, 
@@ -111,12 +112,6 @@ DEBTAB isbc064_debug[] = {
     { NULL }
 };
 
-#if defined (SBC064_NUM) && (SBC064_NUM > 0)
-#define DEFAULT_ENABLE 0
-#else
-#define DEFAULT_ENABLE DEV_DIS
-#endif
- 
 DEVICE isbc064_dev = {
     "SBC064",           //name
     &isbc064_unit,      //units
@@ -135,7 +130,7 @@ DEVICE isbc064_dev = {
     NULL,               //attach
     NULL,               //detach
     NULL,               //ctxt
-    DEV_DEBUG+DEV_DISABLE+DEFAULT_ENABLE, //flags
+    DEV_DEBUG+DEV_DISABLE+DEV_DIS, //flags
     0,                  //dctrl
     isbc064_debug,      //debflags
     NULL,               //msize
@@ -148,6 +143,29 @@ DEVICE isbc064_dev = {
 
 /* Service routines to handle simulator functions */
 
+// isbc064 configuration
+
+t_stat isbc064_cfg(uint16 base, uint16 size, uint8 dummy)
+{
+    isbc064_unit.capac = size;
+    isbc064_unit.u3 = base; 
+    isbc064_dev.units->filebuf = (uint8 *)calloc(isbc064_unit.capac, sizeof(uint8)); //alloc buffer
+    if (isbc064_dev.units->filebuf == NULL) { //CALLOC error
+        sim_printf ("    SBC064: Calloc error\n");
+        return SCPE_MEM;
+    }
+    sim_printf("    SBC064: Enabled 0%04XH bytes at base 0%04XH\n",
+        isbc064_dev.units->capac, isbc064_dev.units->BASE_ADDR);
+    return SCPE_OK;
+}
+
+t_stat isbc064_clr(void)
+{
+    isbc064_unit.capac = 0;
+    isbc064_unit.u3 = 0;
+    free(isbc064_unit.filebuf);
+    return SCPE_OK;
+}
 
 // set size parameter
 
@@ -199,7 +217,7 @@ t_stat isbc064_set_base(UNIT *uptr, int32 val, CONST char *cptr, void *desc)
 
 t_stat isbc064_show_param (FILE *st, UNIT *uptr, int32 val, CONST void *desc)
 {
-    fprintf(st, "%s Base=%04XH  Size=%04XH  ", 
+    fprintf(st, "Device %s, Base address=0%04XH, Size=0%04XH  ", 
         ((isbc064_dev.flags & DEV_DIS) == 0) ? "Enabled" : "Disabled", 
         isbc064_unit.BASE_ADDR, isbc064_unit.capac);
     return SCPE_OK;
@@ -211,24 +229,6 @@ t_stat isbc064_reset (DEVICE *dptr)
 {
     if (dptr == NULL)
         return SCPE_ARG;
-    if (isbc064_onetime) {
-        isbc064_dev.units->capac = SBC064_SIZE; //set default size
-        isbc064_dev.units->BASE_ADDR = SBC064_BASE; //set default base
-        isbc064_onetime = 0;
-    }
-    if ((dptr->flags & DEV_DIS) == 0) { //already enabled
-        isbc064_dev.units->filebuf = (uint8 *)calloc(isbc064_unit.capac, sizeof(uint8)); //alloc buffer
-        if (isbc064_dev.units->filebuf == NULL) { //CALLOC error
-            sim_printf ("    sbc064: Calloc error\n");
-            return SCPE_MEM;
-        }
-        sim_printf("    sbc064: Enabled 0%04XH bytes at base 0%04XH\n",
-            isbc064_dev.units->capac, isbc064_dev.units->BASE_ADDR);
-    } else {
-        if (isbc064_dev.units->filebuf)
-            free(isbc064_dev.units->filebuf);   //return allocated memory
-        sim_printf("    sbc064: Disabled\n");
-    }
     return SCPE_OK;
 }
 

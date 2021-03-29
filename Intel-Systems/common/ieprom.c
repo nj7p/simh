@@ -37,11 +37,13 @@
 */
 
 #include "system_defs.h"
-#define iEPROM_NAME    "Intel EPROM Chip"
+
+#define EPROM_NAME    "Intel EPROM Chip"
 
 /* function prototypes */
 
 t_stat EPROM_cfg (uint16 base, uint16 size, uint8 devnum);
+t_stat EPROM_clr(void);
 t_stat EPROM_show_param (FILE *st, UNIT *uptr, int32 val, CONST void *desc);
 t_stat EPROM_attach (UNIT *uptr, CONST char *cptr);
 t_stat EPROM_reset (DEVICE *dptr);
@@ -53,9 +55,10 @@ uint8 EPROM_get_mbyte (uint16 addr, uint8 devnum);
 
 /* globals */
 
-static const char* iEPROM_desc(DEVICE *dptr) {
-    return iEPROM_NAME;
+static const char* EPROM_desc(DEVICE *dptr) {
+    return EPROM_NAME;
 }
+int ieprom_num = 0;
 
 /* SIMH EPROM Standard I/O Data Structures */
 
@@ -98,12 +101,12 @@ DEVICE EPROM_dev = {
     8,                  //dwidth
     NULL,               //examine
     NULL,               //deposit
-    &EPROM_reset,        //reset
+    &EPROM_reset,       //reset
     NULL,               //boot
     &EPROM_attach,      //attach
     NULL,               //detach
     NULL,               //ctxt
-    DEV_DEBUG,          //flags
+    DEV_DEBUG+DEV_DISABLE+DEV_DIS, //flags 
     0,                  //dctrl
     EPROM_debug,        //debflags
     NULL,               //msize
@@ -111,7 +114,7 @@ DEVICE EPROM_dev = {
     NULL,               //help routine
     NULL,               //attach help routine
     NULL,               //help context
-    &iEPROM_desc        //device description
+    &EPROM_desc         //device description
 };
 
 /* EPROM functions */
@@ -120,15 +123,29 @@ DEVICE EPROM_dev = {
 
 t_stat EPROM_cfg(uint16 base, uint16 size, uint8 devnum)
 {
-    EPROM_unit[devnum].capac = size;        /* set EPROM size */
-    EPROM_unit[devnum].u3 = base & 0xFFFF;  /* set EPROM base */
-    EPROM_unit[devnum].filebuf = (uint8 *)calloc(size, sizeof(uint8));
-    if (EPROM_unit[devnum].filebuf == NULL) {
-        sim_printf ("    EPROM[%d]: Calloc error\n", devnum);
+    EPROM_unit[ieprom_num].capac = size;        /* set EPROM size */
+    EPROM_unit[ieprom_num].u3 = base;           /* set EPROM base */
+    EPROM_unit[ieprom_num].filebuf = (uint8 *)calloc(size, sizeof(uint8));
+    if (EPROM_unit[ieprom_num].filebuf == NULL) {
+        sim_printf ("    EPROM%d: Calloc error\n", ieprom_num);
         return SCPE_MEM;
     }
-    sim_printf("    EPROM[%d]: 0%04XH bytes at base 0%04XH\n",
-        devnum, EPROM_unit[devnum].capac, EPROM_unit[devnum].u3);
+    sim_printf("    EPROM%d: 0%04XH bytes at base address 0%04XH\n",
+        ieprom_num, EPROM_unit[ieprom_num].capac, EPROM_unit[ieprom_num].u3);
+    ieprom_num++;
+    return SCPE_OK;
+}
+
+t_stat EPROM_clr(void)
+{
+    int i;
+    
+    for(i=0; i<ieprom_num; i++) {
+        EPROM_unit[i].capac = 0;
+        EPROM_unit[i].u3 = 0;
+        free(EPROM_unit[i].filebuf);
+    }
+    ieprom_num = 0;
     return SCPE_OK;
 }
 
@@ -136,10 +153,6 @@ t_stat EPROM_cfg(uint16 base, uint16 size, uint8 devnum)
 
 t_stat EPROM_reset (DEVICE *dptr)
 {
-//    uint8 devnum;
-    
-//    for (devnum = 0; devnum <= EPROM_NUM; devnum++) {
-//    }
     return SCPE_OK;
 }
 
@@ -147,9 +160,16 @@ t_stat EPROM_reset (DEVICE *dptr)
 
 t_stat EPROM_show_param (FILE *st, UNIT *uptr, int32 val, CONST void *desc)
 {
-    fprintf(st, "%s Size=%04X  Base=%04X  ", 
-        ((EPROM_dev.flags & DEV_DIS) == 0) ? "Enabled" : "Disabled", 
-        uptr->capac, uptr->u3);
+    int i;
+    
+    if (uptr == NULL)
+        return SCPE_ARG;
+    fprintf(st, "Device %s\n", ((EPROM_dev.flags & DEV_DIS) == 0) ? "Enabled" : "Disabled");
+    for (i=0; i<ieprom_num; i++) {
+        fprintf(st, "Unit %d at Base Address 0%04XH (%dD) for 0%04XH (%dD) Bytes ", 
+            i,
+            EPROM_unit[i].u3, EPROM_unit[i].u3, EPROM_unit[i].capac, EPROM_unit[i].capac);
+    }
     return SCPE_OK;
 }
 
@@ -159,6 +179,8 @@ t_stat EPROM_attach (UNIT *uptr, CONST char *cptr)
 {
     t_stat r;
 
+    if (uptr == NULL)
+        return SCPE_ARG;
     if ((r = attach_unit (uptr, cptr)) != SCPE_OK) {
         sim_printf ("EPROM_attach: Error %d\n", r);
         return r;
@@ -173,7 +195,7 @@ uint8 EPROM_get_mbyte(uint16 addr, uint8 devnum)
     uint8 val;
 
     val = *((uint8 *)EPROM_unit[devnum].filebuf + (addr - EPROM_unit[devnum].u3));
-    return (val &= 0xFF);
+    return (val & 0xFF);
 }
 
 /* end of iEPROM.c */
